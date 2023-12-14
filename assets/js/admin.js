@@ -90,14 +90,14 @@ jQuery(document).ready(function($) {
 
     function getImoveisFromPage(urlApi, authToken, page) {
         $.ajax({
-            // url: `${urlApi}/integration/properties?page=${page}`,
-            url: 'http://imoveispicarra2.test/wp-json/custom/v1/properties/',
+            url: `${urlApi}/integration/properties?page=${page}`,
+            // url: 'http://imoveispicarra2.test/wp-json/custom/v1/properties/',
             type: 'GET',
             timeout: 1800000,
-            // headers: {
-            //     'Authorization': `Bearer ${authToken}`,
-            //     'accept-encoding': 'gzip, deflate',
-            // },
+            headers: {
+                'Authorization': `Bearer ${authToken}`,
+                'accept-encoding': 'gzip, deflate',
+            },
             dataType: 'json',
             success: function (response) {
                 const pageImoveis = response.data;
