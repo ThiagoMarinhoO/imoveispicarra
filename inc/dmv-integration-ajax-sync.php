@@ -78,17 +78,32 @@ function dwv_integration_ajax_sync() {
             $apartmentParkingSpaces = isset($imovel['unit']['parking_spaces']) ? $imovel['unit']['parking_spaces'] : null;
             update_post_meta($existing_post->ID, 'apartment_parking_spaces', $apartmentParkingSpaces);
 
+            // Junta o número de quartos com o sufixo "quarto"
+            $catApartmentParkingSpaces = $apartmentParkingSpaces > 1 ? strval($apartmentParkingSpaces) . ' vagas de garagem'  : strval($apartmentParkingSpaces) . ' vaga de garagem';
+
             // Extrai o número de quartos do apartamento
             $apartmentBedrooms = isset($imovel['unit']['dorms']) ? $imovel['unit']['dorms'] : null;
             update_post_meta($existing_post->ID, 'apartment_bedrooms', $apartmentBedrooms);
+
+            // Junta o número de quartos com o sufixo "quarto"
+            $catApartmentBedrooms = $apartmentBedrooms > 1 ? strval($apartmentBedrooms) . ' quartos'  : strval($apartmentBedrooms) . ' quarto';
 
             // Extrai o número de suítes do apartamento
             $apartmentSuites = isset($imovel['unit']['suites']) ? $imovel['unit']['suites'] : null;
             update_post_meta($existing_post->ID, 'apartment_suites', $apartmentSuites);
 
+            // Junta o número de suítes com o sufixo "suíte"
+            $catApartmentSuites = $apartmentSuites > 1 ? strval($apartmentSuites) . ' suítes'  : strval($apartmentSuites) . ' suíte';
+
             // Extrai o número de banheiros do apartamento
             $apartmentBathrooms = isset($imovel['unit']['bathroom']) ? $imovel['unit']['bathroom'] : null;
             update_post_meta($existing_post->ID, 'apartment_bathrooms', $apartmentBathrooms);
+
+            // Junta o número de banheiros com o sufixo "banheiro"
+            $catApartmentBathrooms = $apartmentBathrooms > 1 ? strval($apartmentBathrooms) . ' banheiros'  : strval($apartmentBathrooms) . ' banheiro';
+
+            // Adiciona o imóvel nas categorias correspondentes
+            wp_set_object_terms($existing_post->ID, array($catApartmentParkingSpaces , $catApartmentBedrooms , $catApartmentSuites , $catApartmentBathrooms), 'category');
 
             // Extrai a área privada do apartamento
             $apartmentPrivateArea = isset($imovel['unit']['private_area']) ? $imovel['unit']['private_area'] : null;
@@ -492,17 +507,41 @@ function dwv_integration_ajax_sync() {
             $apartmentParkingSpaces = isset($imovel['unit']['parking_spaces']) ? $imovel['unit']['parking_spaces'] : null;
             update_post_meta($post_id, 'apartment_parking_spaces', $apartmentParkingSpaces);
 
+            // Junta o número de quartos com o sufixo "quarto"
+            $catApartmentParkingSpaces = $apartmentParkingSpaces > 1 ? strval($apartmentParkingSpaces) . ' vagas de garagem'  : strval($apartmentParkingSpaces) . ' vaga de garagem';
+
+            // Adiciona o número de quartos na categoria x quartos
+            // wp_set_object_terms($post_id, array($catApartmentParkingSpaces), 'category');
+
             // Extrai o número de quartos do apartamento
             $apartmentBedrooms = isset($imovel['unit']['dorms']) ? $imovel['unit']['dorms'] : null;
             update_post_meta($post_id, 'apartment_bedrooms', $apartmentBedrooms);
+
+            // Junta o número de quartos com o sufixo "quarto"
+            $catApartmentBedrooms = $apartmentBedrooms > 1 ? strval($apartmentBedrooms) . ' quartos'  : strval($apartmentBedrooms) . ' quarto';
+
+            // Adiciona o número de quartos na categoria x quartos
+            // wp_set_object_terms($post_id, array($catApartmentBedrooms), 'category');
 
             // Extrai o número de suítes do apartamento
             $apartmentSuites = isset($imovel['unit']['suites']) ? $imovel['unit']['suites'] : null;
             update_post_meta($post_id, 'apartment_suites', $apartmentSuites);
 
+            // Junta o número de suítes com o sufixo "suíte"
+            $catApartmentSuites = $apartmentSuites > 1 ? strval($apartmentSuites) . ' suítes'  : strval($apartmentSuites) . ' suíte';
+
+            // Adiciona o número de suítes na categoria x suítes
+            // wp_set_object_terms($post_id, array($catApartmentSuites), 'category');
+
             // Extrai o número de banheiros do apartamento
             $apartmentBathrooms = isset($imovel['unit']['bathroom']) ? $imovel['unit']['bathroom'] : null;
             update_post_meta($post_id, 'apartment_bathrooms', $apartmentBathrooms);
+            
+            // Junta o número de banheiros com o sufixo "banheiro"
+            $catApartmentBathrooms = $apartmentBathrooms > 1 ? strval($apartmentBathrooms) . ' banheiros'  : strval($apartmentBathrooms) . ' banheiro';
+
+            // Adiciona o número de banheiros na categoria x banheiros
+            wp_set_object_terms($post_id, array($catApartmentBedrooms, $catApartmentBathrooms , $catApartmentSuites , $catApartmentParkingSpaces), 'category');
 
             // Extrai a área privada do apartamento
             $apartmentPrivateArea = isset($imovel['unit']['private_area']) ? $imovel['unit']['private_area'] : null;
