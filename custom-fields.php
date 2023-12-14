@@ -29,8 +29,6 @@ function dwv_integration_custom_fields() {
           'name' => 'apartment_description',
           'type' => 'text',
         ),
-        
-        
         array(
           'key' => 'field_apartment_price',
           'label' => 'Preço do Apartamento',
@@ -43,11 +41,7 @@ function dwv_integration_custom_fields() {
           'name' => 'apartment_gallery',
           'type' => 'gallery', // Tipo de campo galeria
           'instructions' => 'Selecione ou faça upload de imagens para a galeria do apartamento.',
-          
-          // 'mime_types' => 'jpg,jpeg,png', // Tipos de arquivo permitidos
         ),
-
-
         array(
           'key' => 'field_apartment_type',
           'label' => 'Tipo do Apartamento',
@@ -75,10 +69,9 @@ function dwv_integration_custom_fields() {
         array(
           'key' => 'field_apartment_suites',
           'label' => 'Suítes',
-          'name' => 'unit_suites',
+          'name' => 'apartment_suites',
           'type' => 'text',
         ),
-      
         array(
           'key' => 'field_apartment_private_area',
           'label' => 'Área Privada do Apartamento',
@@ -270,46 +263,52 @@ function dwv_integration_custom_fields() {
       'key' => 'group_address',
       'title' => 'Prédio',
       'fields' => array(
-        // array(
-        //   'key' => 'field_building_description',
-        //   'label' => 'Descrição do Prédio',
-        //   'name' => 'building_description',
-        //   'type' => 'group',
-        //   'sub_fields' => array(
-        //       array(
-        //           'key' => 'field_building_description_title',
-        //           'label' => 'Título da descrição do prédio',
-        //           'name' => 'title',
-        //           'type' => 'text',
-        //           'wrapper' => array(
-        //               'width' => '100',
-        //           ),
-        //       ),
-        //       array(
-        //         'key' => 'field_building_description_items',
-        //         'label' => 'Itens da descrição do prédio',
-        //         'name' => 'items',
-        //         'type' => 'repeater',
-        //         'sub_fields' => array(
-        //             array(
-        //                 'key' => 'field_building_description_items_item',
-        //                 'label' => 'Título do Contato',
-        //                 'name' => 'item',
-        //                 'type' => 'text',
-        //                 'wrapper' => array(
-        //                     'width' => '100',
-        //                 ),
-        //             ),
-        //         ),
-        //         // 'collapsed' => 'field_building_description_items_item',
-        //         'min' => 0,
-        //         'button_label' => 'Adicionar Item',
-        //       ),
-        //   ),
-        //   'collapsed' => 'field_additional_contact_title_asd123',
-        //   'min' => 0,
-        //   'button_label' => 'Adicionar Contato',
-        // ),
+        array(
+          'key' => 'field_building_description',
+          'label' => 'Descrição do Prédio',
+          'name' => 'building_description',
+          'type' => 'repeater',
+          'sub_fields' => array(
+              array(
+                  'key' => 'field_building_description_title',
+                  'label' => 'Título da descrição do prédio',
+                  'name' => 'title',
+                  'type' => 'text',
+                  'wrapper' => array(
+                      'width' => '50',
+                  ),
+              ),
+              array(
+                'key' => 'field_building_description_items',
+                'label' => 'Itens da descrição do prédio',
+                'name' => 'items',
+                'type' => 'repeater',
+                'sub_fields' => array(
+                    array(
+                        'key' => 'field_building_description_items_item',
+                        'label' => 'Título do Contato',
+                        'name' => 'item',
+                        'type' => 'text',
+                        'wrapper' => array(
+                            'width' => '50',
+                        ),
+                    ),
+                ),
+                // 'collapsed' => 'field_building_description_items_item',
+                'min' => 0,
+                'button_label' => 'Adicionar Item',
+              ),
+          ),
+          'collapsed' => 'field_additional_contact_title_asd123',
+          'min' => 0,
+          'button_label' => 'Adicionar Contato',
+        ),
+        array(
+          'key' => 'field_address_display_type',
+          'label' => 'Tipo de display do Endereço',
+          'name' => 'address_display_type',
+          'type' => 'text',
+        ),
         array(
           'key' => 'field_building_title',
           'label' => 'Título do Edifício',
@@ -340,13 +339,6 @@ function dwv_integration_custom_fields() {
           'name' => 'construction_stage',
           'type' => 'text',
         ),
-        array(
-          'key' => 'field_building_cover_url',
-          'label' => 'URL da Imagem de Capa do Edifício',
-          'name' => 'building_cover_url',
-          'type' => 'text',
-        ),
-        
         array(
           'key' => 'field_building_gallery',
           'label' => 'Galeria de Imagens do Prédio',
@@ -426,6 +418,12 @@ function dwv_integration_custom_fields() {
           'key' => 'field_tour360_url',
           'label' => 'URL do Tour 360',
           'name' => 'tour360_url',
+          'type' => 'text',
+        ),
+        array(
+          'key' => 'field_building_delivery_date',
+          'label' => 'Data de entrega do edifício',
+          'name' => 'building_delivery_date',
           'type' => 'text',
         ),
         array(

@@ -107,7 +107,6 @@ function dwv_integration_admin_page()
 
         <div class="lastUpdateInfos">
             <span class="lastUpdateDate"></span>
-            <!-- <span class="prog">26 imoveis atualizados, 5 excluídos</span> -->
         </div>
         <h2>Sincronização manual</h2>
         <p>Clique no botão abaixo para sincronizar agora manualmente:</p>
@@ -121,9 +120,6 @@ function dwv_integration_admin_page()
                 <p class="textWarning">Isto pode levar um tempo, aguarde nesta tela até o fim do processo.</p>
             </div>
         </div>
-        <!-- <form method="post" action="">
-            "<submit_button('Sincronizar Agora', 'secondary', 'dwv_integration_manual_sync'); >"
-        </form> -->
 
         <hr>
 
@@ -142,26 +138,6 @@ function dwv_integration_admin_page()
     </div>
     <?php
 }
-
-// Callback para o envio do formulário e sincronização manual
-// function dwv_integration_admin_actions()
-// {
-//     if (isset($_POST['dwv_integration_manual_sync'])) {
-//         dwv_integration_sync_now();
-//     }
-// }
-// add_action('admin_init', 'dwv_integration_admin_actions');
-
-// Função para sincronizar agora manualmente
-// function dwv_integration_sync_now()
-// {
-//     // Execute a sincronização imediatamente
-//     dwv_integration_sync_daily();
-
-//     // Redirecione de volta para a página de administração após a sincronização
-//     wp_redirect(admin_url('admin.php?page=dwv-integration'));
-//     exit;
-// }
 
 // Função para testar a conexão com a API
 function dwv_integration_test_connection()
@@ -220,7 +196,6 @@ function dwv_integration_sync_daily()
             $imoveis_api_names[] = $item['title'];
         }
     }
-    log_to_file('Imoveis da api ' . json_encode( $imoveis_api_names ));
 
     // Obtém todos os posts do tipo 'imovel'
     $args = array(
@@ -250,10 +225,6 @@ function dwv_integration_sync_daily()
         $existentes_imoveis = array();
     }
 
-    // Log dos títulos dos imóveis existentes
-    log_to_file('Imoveis existentes ' . json_encode( $existentes_imoveis ));
-
-
     // POSTS A SEREM EXCLUÍDOS
 
     foreach ($existentes_imoveis as $titulo_existente) {
@@ -266,8 +237,6 @@ function dwv_integration_sync_daily()
             );
 
             $posts = get_posts($args);
-
-            log_to_file(json_encode($posts));
 
             if ($posts) {
                 foreach ($posts as $post) {
@@ -303,10 +272,6 @@ function dwv_integration_sync_daily()
 
             $imovel_status = isset($imovel['status']) ? $imovel['status'] : null;
             update_post_meta($existing_post->ID, 'imovel_status', $imovel_status);
-
-            // Extrai o status do imóvel SE QUISER ESSE DADO É SÓ DESCOMENTAR 
-            // $imovel_deleted = isset($imovel['imovel_deleted']) ? $imovel['imovel_deleted'] : null;
-            // update_field('imovel_deleted', $imovel_deleted, $existing_post->ID);
 
             // Extrai o tipo de exibição dos imoveis
             $address_display_type = isset($imovel['address_display_type']) ? $imovel['address_display_type'] : null;
@@ -370,7 +335,6 @@ function dwv_integration_sync_daily()
             $apartmentRent = isset($imovel['unit']['rent']) ? $imovel['unit']['rent'] : null;
             update_field('apartment_rent', $apartmentRent, $existing_post->ID);
 
-
             $apartmentPaymentConditionsTitle = isset($imovel['unit']['payment_conditions'][0]['title']) ? $imovel['unit']['payment_conditions'][0]['title'] : null;
             update_field('apartment_payment_conditions_title', $apartmentPaymentConditionsTitle, $existing_post->ID);
 
@@ -419,7 +383,6 @@ function dwv_integration_sync_daily()
 
                                 if (!is_wp_error($attachment_id)) {
                                     $processedGallery[] = $attachment_id;
-                                    log_to_file('Baixou a imagem da galeria ' . $index);
                                 } else {
                                     log_to_file('Erro ao adicionar imagem da galeria: ' . $attachment_id->get_error_message());
                                 }
@@ -436,7 +399,6 @@ function dwv_integration_sync_daily()
             // Atualizar campos ACF com as imagens processadas
             if (!empty($processedGallery)) {
                 update_field('field_building_gallery', $processedGallery, $existing_post->ID);
-                log_to_file("Adicionadas imagens da galeria ao campo ACF");
             }
 
             $buildingArchitecturalPlans = isset($imovel['building']['architectural_plans']) ? $imovel['building']['architectural_plans'] : null;
@@ -467,7 +429,6 @@ function dwv_integration_sync_daily()
 
                                 if (!is_wp_error($attachment_id)) {
                                     $processedArchitecturalPlans[] = $attachment_id;
-                                    log_to_file('Baixou a planta arquitetônica ' . $index);
                                 } else {
                                     log_to_file('Erro ao adicionar planta arquitetônica: ' . $attachment_id->get_error_message());
                                 }
@@ -483,7 +444,6 @@ function dwv_integration_sync_daily()
             }
             if (!empty($processedArchitecturalPlans)) {
                 update_field('field_apartment_additional_galleries', $processedArchitecturalPlans, $existing_post->ID);
-                log_to_file("Adicionadas imagens das plantas arquitetônicas ao campo ACF");
             }
             
             $buildingVideo = isset($imovel['building']['video']) ? $imovel['building']['video'] : null;
@@ -493,23 +453,10 @@ function dwv_integration_sync_daily()
             update_post_meta($existing_post->ID, 'tour360_url', $buildingTour360); 
 
 
-            
             $buildingDescription = isset($imovel['building']['description']) ? $imovel['building']['description'] : null;
-            $descriptionTitle = null;
-            $descriptionItems = null;
+            update_field('building_description', $buildingDescription, $existing_post->ID);
             
-            if ($buildingDescription !== null && isset($buildingDescription[0]['title'])) {
-                $descriptionTitle = $buildingDescription[0]['title'];
             
-                if (isset($buildingDescription[0]['items']) && is_array($buildingDescription[0]['items'])) {
-                    $descriptionItems = $buildingDescription[0]['items'];
-                }
-            }
-            update_field('building_description', $descriptionTitle, $existing_post->ID);
-            update_field('building_description', $descriptionItems, $existing_post->ID);
-            
-            $buildingAddress = null;
-                    
             // Extrai endereço do building
             $streetName = isset($imovel['building']['address']['street_name']) ? $imovel['building']['address']['street_name'] : null;
             update_field('field_street_name', $streetName, $existing_post->ID);
@@ -587,8 +534,6 @@ function dwv_integration_sync_daily()
                             // Define a imagem como imagem principal (imagem em destaque) do post
                             set_post_thumbnail($existing_post->ID, $attachment_id);
             
-                            // Log para verificar se a imagem foi definida como imagem em destaque
-                            log_to_file('Imagem definida como imagem principal com sucesso');
                         } else {
                             log_to_file('Erro ao adicionar imagem da capa: ' . $attachment_id->get_error_message());
                         }
@@ -622,8 +567,6 @@ function dwv_integration_sync_daily()
                             // Define a imagem padrão como imagem em destaque do post
                             set_post_thumbnail($existing_post->ID, $attachment_id);
             
-                            // Log para verificar se a imagem padrão foi definida como imagem em destaque
-                            log_to_file('Imagem padrão definida como imagem principal com sucesso');
                         } else {
                             log_to_file('Erro ao adicionar imagem padrão como capa: ' . $attachment_id->get_error_message());
                         }
@@ -657,7 +600,6 @@ function dwv_integration_sync_daily()
                 
                 // Adicionar os tipos como tags ao post
                 if (!empty($featureTypes)) {
-                    log_to_file(json_encode($featureTypes));
                     wp_set_object_terms($existing_post->ID, $featureTypes, 'building_features', true);
                 }
             }
@@ -737,10 +679,6 @@ function dwv_integration_sync_daily()
             $imovel_status = isset($imovel['status']) ? $imovel['status'] : null;
             update_post_meta($post_id, 'imovel_status', $imovel_status);
 
-            // Extrai o status do imóvel SE QUISER ESSE DADO É SÓ DESCOMENTAR 
-            // $imovel_deleted = isset($imovel['imovel_deleted']) ? $imovel['imovel_deleted'] : null;
-            // update_field('imovel_deleted', $imovel_deleted, $existing_post->ID);
-
             // Extrai o tipo de exibição dos imoveis
             $address_display_type = isset($imovel['address_display_type']) ? $imovel['address_display_type'] : null;
             update_field('address_display_type', $address_display_type, $post_id);
@@ -803,7 +741,6 @@ function dwv_integration_sync_daily()
             $apartmentRent = isset($imovel['unit']['rent']) ? $imovel['unit']['rent'] : null;
             update_field('apartment_rent', $apartmentRent, $post_id);
 
-
             $apartmentPaymentConditionsTitle = isset($imovel['unit']['payment_conditions'][0]['title']) ? $imovel['unit']['payment_conditions'][0]['title'] : null;
             update_field('apartment_payment_conditions_title', $apartmentPaymentConditionsTitle, $post_id);
 
@@ -852,7 +789,6 @@ function dwv_integration_sync_daily()
 
                                 if (!is_wp_error($attachment_id)) {
                                     $processedGallery[] = $attachment_id;
-                                    log_to_file('Baixou a imagem da galeria ' . $index);
                                 } else {
                                     log_to_file('Erro ao adicionar imagem da galeria: ' . $attachment_id->get_error_message());
                                 }
@@ -869,7 +805,6 @@ function dwv_integration_sync_daily()
             // Atualizar campos ACF com as imagens processadas
             if (!empty($processedGallery)) {
                 update_field('field_building_gallery', $processedGallery, $post_id);
-                log_to_file("Adicionadas imagens da galeria ao campo ACF");
             }
 
             $buildingArchitecturalPlans = isset($imovel['building']['architectural_plans']) ? $imovel['building']['architectural_plans'] : null;
@@ -900,7 +835,6 @@ function dwv_integration_sync_daily()
 
                                 if (!is_wp_error($attachment_id)) {
                                     $processedArchitecturalPlans[] = $attachment_id;
-                                    log_to_file('Baixou a planta arquitetônica ' . $index);
                                 } else {
                                     log_to_file('Erro ao adicionar planta arquitetônica: ' . $attachment_id->get_error_message());
                                 }
@@ -916,7 +850,6 @@ function dwv_integration_sync_daily()
             }
             if (!empty($processedArchitecturalPlans)) {
                 update_field('field_apartment_additional_galleries', $processedArchitecturalPlans, $post_id);
-                log_to_file("Adicionadas imagens das plantas arquitetônicas ao campo ACF");
             }
             
             $buildingVideo = isset($imovel['building']['video']) ? $imovel['building']['video'] : null;
@@ -928,21 +861,8 @@ function dwv_integration_sync_daily()
 
             
             $buildingDescription = isset($imovel['building']['description']) ? $imovel['building']['description'] : null;
-            $descriptionTitle = null;
-            $descriptionItems = null;
+            update_field('building_description', $buildingDescription, $post_id);
             
-            if ($buildingDescription !== null && isset($buildingDescription[0]['title'])) {
-                $descriptionTitle = $buildingDescription[0]['title'];
-            
-                if (isset($buildingDescription[0]['items']) && is_array($buildingDescription[0]['items'])) {
-                    $descriptionItems = $buildingDescription[0]['items'];
-                }
-            }
-            update_field('building_description', $descriptionTitle, $post_id);
-            update_field('building_description', $descriptionItems, $post_id);
-            
-            $buildingAddress = null;
-                    
             // Extrai endereço do building
             $streetName = isset($imovel['building']['address']['street_name']) ? $imovel['building']['address']['street_name'] : null;
             update_field('field_street_name', $streetName, $post_id);
@@ -1020,8 +940,6 @@ function dwv_integration_sync_daily()
                             // Define a imagem como imagem principal (imagem em destaque) do post
                             set_post_thumbnail($post_id, $attachment_id);
             
-                            // Log para verificar se a imagem foi definida como imagem em destaque
-                            log_to_file('Imagem definida como imagem principal com sucesso');
                         } else {
                             log_to_file('Erro ao adicionar imagem da capa: ' . $attachment_id->get_error_message());
                         }
@@ -1055,8 +973,6 @@ function dwv_integration_sync_daily()
                             // Define a imagem padrão como imagem em destaque do post
                             set_post_thumbnail($post_id, $attachment_id);
             
-                            // Log para verificar se a imagem padrão foi definida como imagem em destaque
-                            log_to_file('Imagem padrão definida como imagem principal com sucesso');
                         } else {
                             log_to_file('Erro ao adicionar imagem padrão como capa: ' . $attachment_id->get_error_message());
                         }
@@ -1090,7 +1006,6 @@ function dwv_integration_sync_daily()
                 
                 // Adicionar os tipos como tags ao post
                 if (!empty($featureTypes)) {
-                    log_to_file(json_encode($featureTypes));
                     wp_set_object_terms($post_id, $featureTypes, 'building_features', true);
                 }
             }
@@ -1123,7 +1038,7 @@ function dwv_integration_sync_daily()
             update_field('construction_company_instagram', $constructionCompanyInstagram, $post_id);
 
             $constructionCompanyLogo = isset($imovel['construction_company']['logo']['url']) ? $imovel['construction_company']['logo']['url'] : null;
-            update_field('construction_company_logo', $constructionCompanyLogo, $post_id);     
+            update_field('construction_company_logo', $constructionCompanyLogo, $post_id);
         }
     }
     }
@@ -1167,17 +1082,6 @@ function dwv_integration_upload_image($image_url, $post_id)
     // Retorna o ID do anexo
     return $attach_id;
 }
-
-// // Função para agendar a sincronização diária
-// function dwv_integration_schedule_sync()
-// {
-//     if (!wp_next_scheduled('dwv_integration_daily_sync')) {
-//         wp_schedule_event(time(), 'daily', 'dwv_integration_daily_sync'); //hourly  daily
-//     }
-// }
-// add_action('wp', 'dwv_integration_schedule_sync');
-
-// ...
 
 // Função para agendar a sincronização a cada 7 dias
 function dwv_integration_schedule_sync()

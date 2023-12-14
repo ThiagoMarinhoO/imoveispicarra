@@ -37,16 +37,8 @@ jQuery(document).ready(function($) {
                 sendImovel();
             },
             error: function (error) {
-                // console.log('Erro ao cadastrar imóvel:', error);
-                // hideSpinner();
-                // $("#syncImoveis").removeAttr("disabled");
-                // failedImoveis.push(imovel); // Adicione o imóvel à lista de falhas
-                // currentIndex++; // Avance para o próximo imóvel
-                // sendImovel(); // Continue com o próximo imóvel
                 console.log('Erro ao cadastrar imóvel:', error);
                 failedImoveis.push(imovel); // Adicione o imóvel à lista de falhas
-                // console.log(`Restam estes imóveis ${failedImoveis}`);
-                // currentIndex++; // Avance para o próximo imóvel
                 console.log(`o index atual ${currentIndex}`);
                 sendImovel(); // Continue com o próximo imóvel
             }
@@ -57,11 +49,6 @@ jQuery(document).ready(function($) {
         $("#syncImoveis").attr("disabled", "disabled");
         showSpinner();
         if (currentIndex < imoveis.length) {
-            // Se houver imóveis na lista de falhas, tente com eles primeiro
-            // if (failedImoveis.length > 0) {
-            //     imoveis = failedImoveis;
-            //     failedImoveis = []; // Limpe a lista de falhas
-            // }
             
             $(".progress-label").text( "Sincronizado até agora " + (currentIndex + 1) + " de " + imoveis.length + "... Aguarde");
 
@@ -90,14 +77,13 @@ jQuery(document).ready(function($) {
 
     function getImoveisFromPage(urlApi, authToken, page) {
         $.ajax({
-            // url: `${urlApi}/integration/properties?page=${page}`,
-            url: 'http://imoveispicarra2.test/wp-json/custom/v1/properties/',
+            url: `${urlApi}/integration/properties?page=${page}`,
             type: 'GET',
             timeout: 1800000,
-            // headers: {
-            //     'Authorization': `Bearer ${authToken}`,
-            //     'accept-encoding': 'gzip, deflate',
-            // },
+            headers: {
+                'Authorization': `Bearer ${authToken}`,
+                'accept-encoding': 'gzip, deflate',
+            },
             dataType: 'json',
             success: function (response) {
                 const pageImoveis = response.data;

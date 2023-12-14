@@ -6,20 +6,14 @@ add_action('wp_ajax_nopriv_dwv_integration_ajax_sync', 'dwv_integration_ajax_syn
 function dwv_integration_ajax_sync() {
     if (isset($_POST['imovel'])) {
         $imovel = $_POST['imovel'];
-        log_to_file($imovel['title']);
-
 
         $existing_post = get_page_by_title($imovel['title'], OBJECT, 'imovel');
-        log_to_file($existing_post);
         if ($existing_post) {
             //variável da última atualização do WP_post
             $post_last_update = '';
 
             $published_at = get_field('field_last_updated_at' , $existing_post);
             $post_modified_date = get_the_modified_date('', $existing_post);
-
-            log_to_file('published_at: ' . $published_at);
-            log_to_file('post_modified_date: ' . $post_modified_date);
 
             //Se não tiver sido modificado a variável terá o valor do published At
             if ($post_modified_date) {
@@ -49,10 +43,6 @@ function dwv_integration_ajax_sync() {
 
             $imovel_status = isset($imovel['status']) ? $imovel['status'] : null;
             update_post_meta($existing_post->ID, 'imovel_status', $imovel_status);
-
-            // Extrai o status do imóvel SE QUISER ESSE DADO É SÓ DESCOMENTAR 
-            // $imovel_deleted = isset($imovel['imovel_deleted']) ? $imovel['imovel_deleted'] : null;
-            // update_field('imovel_deleted', $imovel_deleted, $existing_post->ID);
 
             // Extrai o tipo de exibição dos imoveis
             $address_display_type = isset($imovel['address_display_type']) ? $imovel['address_display_type'] : null;
@@ -165,7 +155,6 @@ function dwv_integration_ajax_sync() {
 
                                 if (!is_wp_error($attachment_id)) {
                                     $processedGallery[] = $attachment_id;
-                                    log_to_file('Baixou a imagem da galeria ' . $index);
                                 } else {
                                     log_to_file('Erro ao adicionar imagem da galeria: ' . $attachment_id->get_error_message());
                                 }
@@ -182,7 +171,6 @@ function dwv_integration_ajax_sync() {
             // Atualizar campos ACF com as imagens processadas
             if (!empty($processedGallery)) {
                 update_field('field_building_gallery', $processedGallery, $existing_post->ID);
-                log_to_file("Adicionadas imagens da galeria ao campo ACF");
             }
 
             $buildingArchitecturalPlans = isset($imovel['building']['architectural_plans']) ? $imovel['building']['architectural_plans'] : null;
@@ -213,7 +201,6 @@ function dwv_integration_ajax_sync() {
 
                                 if (!is_wp_error($attachment_id)) {
                                     $processedArchitecturalPlans[] = $attachment_id;
-                                    log_to_file('Baixou a planta arquitetônica ' . $index);
                                 } else {
                                     log_to_file('Erro ao adicionar planta arquitetônica: ' . $attachment_id->get_error_message());
                                 }
@@ -229,7 +216,6 @@ function dwv_integration_ajax_sync() {
             }
             if (!empty($processedArchitecturalPlans)) {
                 update_field('field_apartment_additional_galleries', $processedArchitecturalPlans, $existing_post->ID);
-                log_to_file("Adicionadas imagens das plantas arquitetônicas ao campo ACF");
             }
             
             $buildingVideo = isset($imovel['building']['video']) ? $imovel['building']['video'] : null;
@@ -241,21 +227,8 @@ function dwv_integration_ajax_sync() {
 
             
             $buildingDescription = isset($imovel['building']['description']) ? $imovel['building']['description'] : null;
-            $descriptionTitle = null;
-            $descriptionItems = null;
-            
-            if ($buildingDescription !== null && isset($buildingDescription[0]['title'])) {
-                $descriptionTitle = $buildingDescription[0]['title'];
-            
-                if (isset($buildingDescription[0]['items']) && is_array($buildingDescription[0]['items'])) {
-                    $descriptionItems = $buildingDescription[0]['items'];
-                }
-            }
-            update_field('building_description', $descriptionTitle, $existing_post->ID);
-            update_field('building_description', $descriptionItems, $existing_post->ID);
-            
-            $buildingAddress = null;
-                    
+            update_field('building_description', $buildingDescription, $existing_post->ID);
+                                
             // Extrai endereço do building
             $streetName = isset($imovel['building']['address']['street_name']) ? $imovel['building']['address']['street_name'] : null;
             update_field('field_street_name', $streetName, $existing_post->ID);
@@ -334,7 +307,6 @@ function dwv_integration_ajax_sync() {
                             set_post_thumbnail($existing_post->ID, $attachment_id);
             
                             // Log para verificar se a imagem foi definida como imagem em destaque
-                            log_to_file('Imagem definida como imagem principal com sucesso');
                         } else {
                             log_to_file('Erro ao adicionar imagem da capa: ' . $attachment_id->get_error_message());
                         }
@@ -367,9 +339,6 @@ function dwv_integration_ajax_sync() {
                         if (!is_wp_error($attachment_id)) {
                             // Define a imagem padrão como imagem em destaque do post
                             set_post_thumbnail($existing_post->ID, $attachment_id);
-            
-                            // Log para verificar se a imagem padrão foi definida como imagem em destaque
-                            log_to_file('Imagem padrão definida como imagem principal com sucesso');
                         } else {
                             log_to_file('Erro ao adicionar imagem padrão como capa: ' . $attachment_id->get_error_message());
                         }
@@ -403,7 +372,6 @@ function dwv_integration_ajax_sync() {
                 
                 // Adicionar os tipos como tags ao post
                 if (!empty($featureTypes)) {
-                    log_to_file(json_encode($featureTypes));
                     wp_set_object_terms($existing_post->ID, $featureTypes, 'building_features', true);
                 }
             }
@@ -490,10 +458,6 @@ function dwv_integration_ajax_sync() {
             $imovel_status = isset($imovel['status']) ? $imovel['status'] : null;
             update_post_meta($post_id, 'imovel_status', $imovel_status);
 
-            // Extrai o status do imóvel SE QUISER ESSE DADO É SÓ DESCOMENTAR 
-            // $imovel_deleted = isset($imovel['imovel_deleted']) ? $imovel['imovel_deleted'] : null;
-            // update_field('imovel_deleted', $imovel_deleted, $existing_post->ID);
-
             // Extrai o tipo de exibição dos imoveis
             $address_display_type = isset($imovel['address_display_type']) ? $imovel['address_display_type'] : null;
             update_field('address_display_type', $address_display_type, $post_id);
@@ -556,7 +520,6 @@ function dwv_integration_ajax_sync() {
             $apartmentRent = isset($imovel['unit']['rent']) ? $imovel['unit']['rent'] : null;
             update_field('apartment_rent', $apartmentRent, $post_id);
 
-
             $apartmentPaymentConditionsTitle = isset($imovel['unit']['payment_conditions'][0]['title']) ? $imovel['unit']['payment_conditions'][0]['title'] : null;
             update_field('apartment_payment_conditions_title', $apartmentPaymentConditionsTitle, $post_id);
 
@@ -605,7 +568,6 @@ function dwv_integration_ajax_sync() {
 
                                 if (!is_wp_error($attachment_id)) {
                                     $processedGallery[] = $attachment_id;
-                                    log_to_file('Baixou a imagem da galeria ' . $index);
                                 } else {
                                     log_to_file('Erro ao adicionar imagem da galeria: ' . $attachment_id->get_error_message());
                                 }
@@ -622,7 +584,6 @@ function dwv_integration_ajax_sync() {
             // Atualizar campos ACF com as imagens processadas
             if (!empty($processedGallery)) {
                 update_field('field_building_gallery', $processedGallery, $post_id);
-                log_to_file("Adicionadas imagens da galeria ao campo ACF");
             }
 
             $buildingArchitecturalPlans = isset($imovel['building']['architectural_plans']) ? $imovel['building']['architectural_plans'] : null;
@@ -653,7 +614,6 @@ function dwv_integration_ajax_sync() {
 
                                 if (!is_wp_error($attachment_id)) {
                                     $processedArchitecturalPlans[] = $attachment_id;
-                                    log_to_file('Baixou a planta arquitetônica ' . $index);
                                 } else {
                                     log_to_file('Erro ao adicionar planta arquitetônica: ' . $attachment_id->get_error_message());
                                 }
@@ -669,7 +629,6 @@ function dwv_integration_ajax_sync() {
             }
             if (!empty($processedArchitecturalPlans)) {
                 update_field('field_apartment_additional_galleries', $processedArchitecturalPlans, $post_id);
-                log_to_file("Adicionadas imagens das plantas arquitetônicas ao campo ACF");
             }
             
             $buildingVideo = isset($imovel['building']['video']) ? $imovel['building']['video'] : null;
@@ -678,24 +637,10 @@ function dwv_integration_ajax_sync() {
             $buildingTour360 = isset($imovel['building']['tour_360']) ? $imovel['building']['tour_360'] : null;
             update_post_meta($post_id, 'tour360_url', $buildingTour360); 
 
-
             
             $buildingDescription = isset($imovel['building']['description']) ? $imovel['building']['description'] : null;
-            $descriptionTitle = null;
-            $descriptionItems = null;
-            
-            if ($buildingDescription !== null && isset($buildingDescription[0]['title'])) {
-                $descriptionTitle = $buildingDescription[0]['title'];
-            
-                if (isset($buildingDescription[0]['items']) && is_array($buildingDescription[0]['items'])) {
-                    $descriptionItems = $buildingDescription[0]['items'];
-                }
-            }
-            update_field('building_description', $descriptionTitle, $post_id);
-            update_field('building_description', $descriptionItems, $post_id);
-            
-            $buildingAddress = null;
-                    
+            update_field('building_description', $buildingDescription, $post_id);
+                                
             // Extrai endereço do building
             $streetName = isset($imovel['building']['address']['street_name']) ? $imovel['building']['address']['street_name'] : null;
             update_field('field_street_name', $streetName, $post_id);
@@ -773,8 +718,6 @@ function dwv_integration_ajax_sync() {
                             // Define a imagem como imagem principal (imagem em destaque) do post
                             set_post_thumbnail($post_id, $attachment_id);
             
-                            // Log para verificar se a imagem foi definida como imagem em destaque
-                            log_to_file('Imagem definida como imagem principal com sucesso');
                         } else {
                             log_to_file('Erro ao adicionar imagem da capa: ' . $attachment_id->get_error_message());
                         }
@@ -809,7 +752,6 @@ function dwv_integration_ajax_sync() {
                             set_post_thumbnail($post_id, $attachment_id);
             
                             // Log para verificar se a imagem padrão foi definida como imagem em destaque
-                            log_to_file('Imagem padrão definida como imagem principal com sucesso');
                         } else {
                             log_to_file('Erro ao adicionar imagem padrão como capa: ' . $attachment_id->get_error_message());
                         }
@@ -843,7 +785,6 @@ function dwv_integration_ajax_sync() {
                 
                 // Adicionar os tipos como tags ao post
                 if (!empty($featureTypes)) {
-                    log_to_file(json_encode($featureTypes));
                     wp_set_object_terms($post_id, $featureTypes, 'building_features', true);
                 }
             }
@@ -887,263 +828,3 @@ function dwv_integration_ajax_sync() {
         }
     }
 }
-
-// XXXXXXXXXXXXXXXXX TESTE API XXXXXXXXXXXXXXXXXXXX
-
-function get_custom_properties( $request ) {
-
-    $properties = [
-        [
-            'id' => 1,
-            'title' => 'Imóvel De Frente Pra Gávea',
-            'description' => "Empreendimento\\nExcelente localização\\n2 Apartamentos por andar\\nHall de entrada decorado\\nSom ambiente no hall de lazer\\nRevestimento 100% pastilhado\\nPiso em porcelanato\\n2 Elevadores\nde última geração\\nSistema de monitoramento\\nSensores de presença nas luzes das áreas comuns\\nInfraestrutura para medidores individuais de luz água e gás\\nGerador de energia,Apartamentos\\n3\nSuítes\\nAmplo living\\nAmbientes integrados\\nÁrea de serviço e lavabo\\nSacada com churrasqueira\\ninfraestrutura para automação\\nInfraestrutura para aspiração central\\nFechadura com leitor\nfacial\\nExaustor na churrasqueira\\nCONDIÇÕES DE PAGAMENTO\\nEntrada (30%) - 1078255.56096,Reforços e saldo (até 60x) - 2515929.64224,Tipo - 4 Suítes,Vagas de garagem - 4\\n\\n\nApartamento\\nApartamentos com 03 suítes\\nLavabo\\nLiving integrado\\nSacada com churrasqueira\\n02 Vagas de garagem\\nÁreas privativas de 125m² e 126m²,Área de lazer 300m²\\nPiscina adulto e\ninfantil\\nDeck externo\\nSalão de Festas e Convivência\\nEspaço Fitness\\nPlayground,Empreendimento\\n15 Andares\\n02 Apartamentos por andar\\nElevador social e de serviço\\nArquitetura contemporânea\n\\nÁreas comuns decoradas e mobiliadas\\nPiso laminado nas áreas íntimas\\nPiso em porcelanato\\nManta acústica p/ isolamento em aptos\\nEspera para automação residencial\\nAcabamento em gesso\n\\nCortineiro de gesso no living e nas suítes\\n\\n         CONDIÇÕES DE PAGAMENTO\\n\\n         Entrada (15%) - 133500\\nReforços - Anuais\\nChaves (10%) - 89000\\nSaldo - 72x\n",
-            'status' => 'active',
-            'construction_stage' => 'under_construction',
-            'deleted' => false,
-            'address_display_type' => 'full_address',
-            'unit' => [
-                'id' => 254,
-                'title' => '801',
-                'price' => '100038.76',
-                'type' => 'Decorado',
-                'floor_plan' => [
-                    'category' => [
-                        'title' => 'Apartamento',
-                        'tag' => 'apartment',
-                    ],
-                ],
-                'parking_spaces' => 1,
-                'dorms' => 1,
-                'suites' => 1,
-                'bathroom' => 1,
-                'private_area' => 25.2,
-                'util_area' => 25.2,
-                'total_area' => 35.6,
-                'construction_stage' => 'new',
-                'rent' => false,
-                'payment_conditions' => [
-                    [
-                        'title' => 'Entrada 20%',
-                        'operator' => [
-                            'title' => 'Percentual',
-                            'type' => 'percentage',
-                        ],
-                        'value' => '20007.75',
-                    ],
-                ],
-            ],
-            'building' => [
-                'id' => 42,
-                'title' => 'Green Coast',
-                'gallery' => [
-                    'url' => 'https://dwvimages.sfo2.cdn.digitaloceanspaces.com/upload/2018/07/fachada-greencoast-208x300.jpg',
-                    'sizes' => [
-                        'small' => 'https://dwvimages.sfo2.cdn.digitaloceanspaces.com/upload/2018/07/fachada-greencoast-208x300.jpg',
-                        'medium' => 'https://dwvimages.sfo2.cdn.digitaloceanspaces.com/upload/2018/07/fachada-greencoast-208x300.jpg',
-                        'large' => 'https://dwvimages.sfo2.cdn.digitaloceanspaces.com/upload/2018/07/fachada-greencoast-208x300.jpg',
-                        'circle' => 'https://dwvimages.sfo2.cdn.digitaloceanspaces.com/upload/2018/07/fachada-greencoast-208x300.jpg',
-                    ],
-                ],
-                'architectural_plans' => [
-                    'url' => 'https://dwvimages.sfo2.cdn.digitaloceanspaces.com/upload/2018/07/fachada-greencoast-208x300.jpg',
-                    'sizes' => [
-                        'small' => 'https://dwvimages.sfo2.cdn.digitaloceanspaces.com/upload/2018/07/fachada-greencoast-208x300.jpg',
-                        'medium' => 'https://dwvimages.sfo2.cdn.digitaloceanspaces.com/upload/2018/07/fachada-greencoast-208x300.jpg',
-                        'large' => 'https://dwvimages.sfo2.cdn.digitaloceanspaces.com/upload/2018/07/fachada-greencoast-208x300.jpg',
-                        'circle' => 'https://dwvimages.sfo2.cdn.digitaloceanspaces.com/upload/2018/07/fachada-greencoast-208x300.jpg',
-                    ],
-                ],
-                'video' => 'http://vi.cv/mez',
-                'tour_360' => 'http://vi.cv/tour',
-                'description' => [
-                    [
-                        'title' => 'Apartamento',
-                        'items' => [
-                            [
-                                'item' => '01 Suíte (Sendo ela com Hidromassagem e Closet)',
-                            ],
-                        ],
-                    ],
-                ],
-                'address' => [
-                    'street_name' => 'Rua 129',
-                    'street_number' => 'D 1',
-                    'neighborhood' => 'Centro',
-                    'complement' => 'S/ Complemento',
-                    'zip_code' => '88220-000',
-                    'city' => 'Itapema',
-                    'state' => 'SC',
-                    'country' => 'Brasil',
-                    'latitude' => -27.09474718237976,
-                    'longitude' => -48.61392433789632,
-                ],
-                'text_address' => 'Rua 129 D 1, Centro, Itapema - SC',
-                'incorporation' => 'Incorporação R2-23412',
-                'cover' => [
-                    'url' => 'https://dwvimages.sfo2.cdn.digitaloceanspaces.com/upload/2018/07/fachada-greencoast-208x300.jpg',
-                    'sizes' => [
-                        'small' => 'https://dwvimages.sfo2.cdn.digitaloceanspaces.com/upload/2018/07/fachada-greencoast-208x300.jpg',
-                        'medium' => 'https://dwvimages.sfo2.cdn.digitaloceanspaces.com/upload/2018/07/fachada-greencoast-208x300.jpg',
-                        'large' => 'https://dwvimages.sfo2.cdn.digitaloceanspaces.com/upload/2018/07/fachada-greencoast-208x300.jpg',
-                        'circle' => 'https://dwvimages.sfo2.cdn.digitaloceanspaces.com/upload/2018/07/fachada-greencoast-208x300.jpg',
-                    ],
-                ],
-                'features' => [
-                    [
-                        'type' => 'Empreendimento',
-                        'tags' => [
-                            'Playground',
-                            'Academia',
-                            'Sala de reuniões',
-                            'Hall de entrada decorado e mobiliado',
-                            'Heliponto',
-                            'Hidromassagem',
-                            'Jacuzzi',
-                            'Rooftop',
-                            'Solarium',
-                            'Hidromassagem na piscina',
-                            'Piscina',
-                            'Piscina adulta',
-                            'Piscina adulta com borda infinita',
-                            'Piscina infantil',
-                            'Piscina térmica',
-                            'Academia',
-                            'Bar',
-                            'Bicicletário',
-                            'Brinquedoteca',
-                            'Espaço gourmet',
-                            'Estar Social',
-                            'Estúdio de pilates',
-                            'Lounge',
-                            'Playground',
-                            'Pub',
-                            'Sala de Reunião',
-                            'Sala de games',
-                            'Sala de jogos',
-                            'Salão de festas',
-                            'Sauna',
-                            'Spa',
-                            'Circuito Tv',
-                            'Elevador',
-                            'Guarita de segurança',
-                            'Interfone',
-                            'Internet',
-                            'Painéis de energia solar',
-                            'Alarme',
-                            'Entrada p/ banhistas e box de praia',
-                            'Reaproveitamento de água',
-                            'Medidores de água, luz e gás individuais',
-                        ],
-                    ],
-                    [
-                        'type' => 'Apartamento',
-                        'tags' => [
-                            'Sacada com churrasqueira',
-                            'Fechadura com senha na porta de entrada',
-                            'Acabamento em gesso',
-                            'Banheira Hidromassagem',
-                            'Cozinha Americana',
-                            'Escritório',
-                            'Hidromassagem',
-                            'Home Office',
-                            'Lareira',
-                            'Living',
-                            'Mezanino',
-                            'Piso aquecido nos banheiros',
-                            'Sacada',
-                            'Sala de Estar',
-                            'Sala de jantar',
-                            'Varanda',
-                            'Varanda Gourmet',
-                            'Vista Panorâmica',
-                            'Acessibilidade para PNE',
-                            'Closet',
-                            'Móveis Planejados',
-                            'Acabamento em gesso',
-                            'Armário Cozinha',
-                            'Banheiro Auxiliar',
-                            'Banheiro Social',
-                            'Banheiro de Serviço',
-                            'Churrasqueira',
-                            'Cozinha',
-                            'Dependência de empregada',
-                            'Área de Serviço',
-                            'Aquecimento á Gás',
-                            'Ar Condicionado',
-                            'Armário Embutido',
-                            'Despensa',
-                            'Infraestrutura para água quente',
-                            'Lavabo',
-                            'Porcelanato',
-                            'Circuito Tv',
-                            'Interfone',
-                            'Internet',
-                            'Alarme',
-                            'Espera para split',
-                        ],
-                    ],
-                ],
-                'delivery_date' => '2021-11-11',
-            ],
-            'construction_company' => [
-                'title' => 'Cibea',
-                'site' => 'http://construtora.com.br',
-                'whatsapp' => '(47) 95559030453',
-                'instagram' => '@construtora',
-                'business_contacts' => [
-                    [
-                        'responsible' => 'José da Silva',
-                        'phone_number' => '(47) 95559030453',
-                    ],
-                    [
-                        'responsible' => 'Zé da Silva',
-                        'phone_number' => '(47) 95559030453',
-                    ],
-                ],
-                'additionals_contacts' => [
-                    [
-                        'responsible' => 'José da Silva',
-                        'whatsapp' => '(47) 95559030453',
-                    ],
-                    [
-                        'responsible' => 'Zé Maria',
-                        'whatsapp' => '(47) 95559030453',
-                    ],
-                ],
-                'logo' => [
-                    'url' => 'https://dwvimages.sfo2.cdn.digitaloceanspaces.com/upload/2018/07/fachada-greencoast-208x300.jpg',
-                    'sizes' => [
-                        'small' => 'https://dwvimages.sfo2.cdn.digitaloceanspaces.com/upload/2018/07/icone-novo-1.png',
-                        'medium' => 'https://dwvimages.sfo2.cdn.digitaloceanspaces.com/upload/2018/07/icone-novo-1.png',
-                        'large' => 'https://dwvimages.sfo2.cdn.digitaloceanspaces.com/upload/2018/07/icone-novo-1.png',
-                        'circle' => 'https://dwvimages.sfo2.cdn.digitaloceanspaces.com/upload/2018/07/icone-novo-1.png',
-                    ],
-                ],
-            ],
-            'last_updated_at' => '2022-03-11 12:24:18',
-        ],
-    ];
-    
-
-    $response = array(
-        'total' => count($properties),
-        'perPage' => 20,
-        'page' => 1,
-        'lastPage' => 1,
-        'data' => $properties,
-    );
-
-    return rest_ensure_response($response);
-}
-
-function register_api_posts_endpoint() {
-    register_rest_route('custom/v1', '/properties', array(
-        array(
-            'methods' => 'GET',
-            'callback' => 'get_custom_properties',
-        ),
-    ));
-}
-
-
-add_action('rest_api_init', 'register_api_posts_endpoint');
